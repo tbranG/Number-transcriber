@@ -1,20 +1,54 @@
 #include<string>
+#include<map>
+#include<stdexcept>
 #include"Transc.hpp"
 
 //Construtor
-Translator::Translator(){
-    unitStrings = {
-        "zero", "um", "dois", "tres", "quatro", "cinco", "seis", "sete", "oito", "nove"
-    };
-    extraStrings = {
-        "onze", "doze", "treze", "quatorze", "quize", "dezesseis", "dezessete", "dezoito", "dezenove"
-    };
-    tensStrings = {
-        "dez", "vinte", "trinta", "quarenta", "cinquenta", "sessenta", "setenta", "oitenta", "noventa"
-    };
-    hundredsStrings = {
-        "cento", "duzentos", "trezentos", "quatrocentos", "quinhentos", "seiscentos", "setecentos", "oitocentos", "novecentos"
-    };
+Translator::Translator(std::string lang){
+    std::map<std::string, unsigned int> langCodes;
+
+    langCodes["en"] = 1;
+    langCodes["pt-BR"] = 2;
+
+    auto exists = langCodes.find(lang);
+
+    if(exists == langCodes.end()) throw std::invalid_argument("ERR: Language not supported or not identified");
+
+    langCode = (unsigned short)exists->second;
+
+    if(langCode == 1){
+        unitStrings = {
+            "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"
+        };
+        extraStrings = {
+            "eleven", "twelve", "thirteen", "fourteen", "fifhteen", "sixteen", "seventeen", "eighteen", "nineteen"
+        };
+        tensStrings = {
+            "ten", "twenty", "thirty", "fourty", "fifty", "sixty", "seventy", "eighty", "ninety"
+        };
+        hundredsStrings = {
+            "one hundred", "two hundred", "three hundred", "four hundred", "fice hundred", "six hundred", "seven hundred", "eight hundred", "nine hundred"
+        };
+        connectionString = " and ";
+        hundredSimpleString = "hundred";
+        thousandSimpleString = "thousand";
+    }else{
+        unitStrings = {
+            "zero", "um", "dois", "tres", "quatro", "cinco", "seis", "sete", "oito", "nove"
+        };
+        extraStrings = {
+            "onze", "doze", "treze", "quatorze", "quize", "dezesseis", "dezessete", "dezoito", "dezenove"
+        };
+        tensStrings = {
+            "dez", "vinte", "trinta", "quarenta", "cinquenta", "sessenta", "setenta", "oitenta", "noventa"
+        };
+        hundredsStrings = {
+            "cento", "duzentos", "trezentos", "quatrocentos", "quinhentos", "seiscentos", "setecentos", "oitocentos", "novecentos"
+        };
+        connectionString = " e ";
+        hundredSimpleString = "cento";
+        thousandSimpleString = "mil";
+    }
 }
 
 /// @brief Método que retorna uma string transcrevendo números no intervalo de 0..9
@@ -37,7 +71,7 @@ std::string Translator::getTensStr(unsigned short over, unsigned short left){
     if(left==0){
         return tensStrings[over - 1];
     }else{
-        return tensStrings[over - 1] + " e " + unitStrings[left];
+        return tensStrings[over - 1] + connectionString + unitStrings[left];
     }
 }
 
@@ -48,55 +82,61 @@ std::string Translator::getTensStr(unsigned short over, unsigned short left){
 std::string Translator::getHundredsStr(unsigned short over, unsigned short left){
     //exceção para o número cem. Acima de cem, os números são escritos com cento.
     if(over==1 && left==0){
-        return "cem";
+        return hundredSimpleString;
     }
 
     if(left==0){
         return hundredsStrings[over - 1];
     }
     else if(left < 10){
-        return hundredsStrings[over - 1] + " e " + getUnitStr(left);
+        return hundredsStrings[over - 1] + connectionString + getUnitStr(left);
     }else{
-        return hundredsStrings[over - 1] + " e " + getTensStr(left / 10, left % 10);
+        return hundredsStrings[over - 1] + connectionString + getTensStr(left / 10, left % 10);
     }
 }
 
 std::string Translator::getThousandsStr(unsigned short over, unsigned short left){
     //tratando casos especiais
+    std::string specialBThousand = " " + thousandSimpleString;
+    std::string specialThousandConnection = thousandSimpleString + connectionString;
+
     if(left==0 && over==1){
-        return "mil";
+        return thousandSimpleString;
     }
     if(left==0 && over < 10){
-        return getUnitStr(over) + " mil";
+        return getUnitStr(over) + specialBThousand;
     }
     if(left==0 && over < 100){
-        return getTensStr(over / 10, over % 10) + " mil";
+        return getTensStr(over / 10, over % 10) + specialBThousand;
     }
     if(left==0 && over < 1000){
-        return getHundredsStr(over / 100, over % 100) + " mil";
+        return getHundredsStr(over / 100, over % 100) + specialBThousand;
     }
 
     if(over==1 && left < 10){
-        return "mil e " + getUnitStr(left);
+        return specialThousandConnection + getUnitStr(left);
     }
     if(over==1 && left < 100){
-        return "mil e " + getTensStr(left / 10, left % 10);
+        return specialThousandConnection + getTensStr(left / 10, left % 10);
     }
     if(over==1 && left < 1000){
-        return "mil e " + getHundredsStr(left / 100, left % 100);
+        return specialThousandConnection + getHundredsStr(left / 100, left % 100);
     }
     //-----------------------------
     //casos genéricos
     
     std::string numStr = "";
+    std::string specialBTB = " " + thousandSimpleString;
+    specialBTB += connectionString;
+
     if(over < 10){
-        numStr += getUnitStr(over) + " mil e ";
+        numStr += getUnitStr(over) + specialBTB;
     }
     else if(over < 100){
-        numStr += getTensStr(over / 10, over % 10) + " mil e ";
+        numStr += getTensStr(over / 10, over % 10) + specialBTB;
     }
     else if(over < 1000){
-        numStr += getHundredsStr(over / 100, over % 100) + " mil e ";
+        numStr += getHundredsStr(over / 100, over % 100) + specialBTB;
     }
 
     if(left < 10){
