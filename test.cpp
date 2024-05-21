@@ -1,6 +1,6 @@
-#include<iostream>
+#include <iostream>
 #include <stdexcept>
-#include"Transc.hpp"
+#include "transc.hpp"
 
 using namespace std;
 

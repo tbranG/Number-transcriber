@@ -1,7 +1,7 @@
-#include<string>
-#include<map>
-#include<stdexcept>
-#include"Transc.hpp"
+#include <string>
+#include <map>
+#include <stdexcept>
+#include "transc.hpp"
 
 //Construtor
 Translator::Translator(std::string lang){

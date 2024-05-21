@@ -1,7 +1,7 @@
 #ifndef TRANSC_HPP
 #define TRANSC_HPP
-#include<string>
-#include<vector>
+#include <string>
+#include <vector>
 
 class Translator{
     private:
